@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Upload Preview</title>
+  <style>
+    body {
+      background: #f4f0ed;
+      color: #000000;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+
+    #header {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #controls{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    input[type="file"] {
+      margin-bottom: 1rem;
+    }
+
+    #canvasContainer{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content:space-evenly; 
+    }
+    
+    canvas {
+        max-width: 45vw;
+        max-height: 80vh;
+        /* border: 1px solid #444; */
+    }
+  </style>
+</head>
+<body>
+
+<div id="header"> 
+    <h1>📷 Upload an Image</h1>
+    <div id="controls">
+    <div>
+        <label for="dotSize">Dot Size:</label>
+        <input type="range" id="dotSize" min="5" max="100" value="12" />
+    </div>
+    <div>
+        <label for="alphaThres">Bias:</label>
+        <input 
+            type="range" 
+            id="alphaThres" 
+            min="0" 
+            max="255" 
+            step="1" 
+            value="188" 
+        />
+    </div>
+    </div>
+</div>
+  <div> <input type="file" id="imageInput" accept="image/*" />
+  <label for="exportCanvasSelect">Export:</label>
+  <select id="exportCanvasSelect">
+    <option value="matrixCanvas">Halftone</option>
+    <option value="grayscaleCanvas">Grayscale</option>
+    <option value="asciiCanvas">ASCII</option>
+  </select>
+  <button id="downloadBtn">Download PNG</button></div>
+  <div id="canvasContainer"></div>
+
+
+  <script src="main.js"></script>
+
+</body>
+</html>
