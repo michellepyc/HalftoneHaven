@@ -284,25 +284,36 @@ input[type="range"]:focus::-moz-range-thumb {
         display: none;
     }
 
+#sidebarContent{
+    margin: 0;
+    justify-content: space-around;
+}
+
   #dropZone{
     display: none;
   }
+
 #browseBtn{
    visibility: visible;
+   padding: 1rem;
 }
 
   /* Main content stretches full width */
   #main {
-    margin: 1rem;
+    margin: 0rem;
   }
 
   #main h1{
     display: block;
   }
 
+   #main p{
+    display: none;
+  }
+
   #canvasContainer {
     min-width: auto;
-    max-width: 100%;
+    max-width: 95%;
     padding: 1rem 0rem;
   }
 
@@ -320,7 +331,6 @@ input[type="range"]:focus::-moz-range-thumb {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-top: 1rem;
   }
   #controls div {
     display: flex;
