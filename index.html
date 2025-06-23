@@ -11,15 +11,18 @@
 <div id="sidebar"> 
   <!-- Header -->
     <h1>HalftoneHaven</h1>
-  <!-- Import -->
 
   <div id="sidebarContent">
+
+  <!-- Import -->
   <div id="import">
     <p>Upload an Image</p>
     <div id="dropZone">
-      <!-- Import Icon -->
       <p>Drag &amp; drop an image here or click to browse</p>
       <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    </div>
+    <div id="importBttn" style="visibility: hidden;">
+      <button id="browseBtn" type="button" >Browse</button>
     </div>
   </div>
     
@@ -47,12 +50,18 @@
 
 
 <div id="main">
+  <!-- Header -->
+    <h1>HalftoneHaven</h1>
+
+  <!-- Canvas Buttons -->
     <div id="canvasButtons">
       <button class="canvasBtn" data-canvas="originalCanvas">Original</button>
       <button class="canvasBtn" data-canvas="halftoneCanvas">Halftone</button>
       <button class="canvasBtn" data-canvas="asciiCanvas">ASCII</button>
       <button class="canvasBtn" data-canvas="pixelCanvas">Pixel</button>
     </div>
+
+  <!-- Canvas -->
   <div id="canvasContainer">
       <canvas id="originalCanvas"></canvas>
       <canvas id="halftoneCanvas"></canvas>

@@ -193,8 +193,12 @@ class UIController {
 
     //dropZone and file upload
     const dropZone = document.getElementById('dropZone');
+    const importBttn =  document.getElementById('importBttn');
+
     // clicking the box opens file picker
     dropZone.addEventListener('click', () => this.imageInput.click());
+    importBttn.addEventListener('click', () => this.imageInput.click());
+
 
     // highlight drop zone on dragover
     dropZone.addEventListener('dragover', e => {
