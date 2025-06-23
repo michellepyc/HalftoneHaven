@@ -1,255 +1,257 @@
 "use strict";
 
-/**
- * Halftone ASCII Art Generator
- * ----------------------------
- * Loads an image, generates a halftone dot matrix, renders it to canvases,
- * and converts the result to ASCII art.
- */
+// Handles loading images from a file input
+class ImageLoader {
+  /**
+   * @param {HTMLInputElement} inputElem
+   * @param {(img: HTMLImageElement) => void} callback
+   */
+  constructor(inputElem, callback) {
+    this.inputElem = inputElem;
+    this.callback = callback;
+    this.inputElem.addEventListener('change', this._onChange.bind(this));
+  }
 
-// DOM & Canvas Elements
-const imageInput = document.getElementById("imageInput");
-const originalCanvas = document.createElement("canvas");
-const grayscaleCanvas = document.createElement("canvas");
-const matrixCanvas = document.createElement("canvas");
-const asciiCanvas = document.createElement("canvas");
-
-// Offscreen full-resolution canvas for exports
-const fullResCanvas = document.createElement('canvas');
-const fullResCtx = fullResCanvas.getContext('2d');
-
-originalCanvas.id = "originalCanvas";
-grayscaleCanvas.id = "grayscaleCanvas";
-matrixCanvas.id = "matrixCanvas";
-asciiCanvas.id = "asciiCanvas";
-
-// Create and insert matrix canvas below existing canvases
-const canvasContainer = document.getElementById("canvasContainer");
-
-canvasContainer.appendChild(originalCanvas);
-canvasContainer.appendChild(grayscaleCanvas);
-canvasContainer.appendChild(matrixCanvas);
-canvasContainer.appendChild(asciiCanvas);
-
-
-const exportSelect = document.getElementById('exportCanvasSelect');
-const downloadBtn   = document.getElementById('downloadBtn');
-
-/**
- * Download a canvas element as a PNG file.
- * @param {HTMLCanvasElement} canvas - The canvas to export
- * @param {string} filename - The filename for download
- */
-function downloadCanvas(canvas, filename) {
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = filename;
-  link.click();
+  _onChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => this.callback(img);
+    img.src = URL.createObjectURL(file);
+  }
 }
 
-downloadBtn.addEventListener('click', () => {
-  const selectedId = exportSelect.value;
-  const srcCanvas  = document.getElementById(selectedId);
-  if (!srcCanvas) {
-    console.error('Canvas not found:', selectedId);
-    return;
-  }
-  let exportCanvas = srcCanvas;
-  if (selectedId === 'originalCanvas') {
-    // For the original, export the full-resolution copy
-    exportCanvas = fullResCanvas;
-  } else {
-    // Scale other canvases up to full original resolution
-    const temp = document.createElement('canvas');
-    temp.width  = fullResCanvas.width;
-    temp.height = fullResCanvas.height;
-    const tctx = temp.getContext('2d');
-    tctx.drawImage(srcCanvas, 0, 0, temp.width, temp.height);
-    exportCanvas = temp;
-  }
-  downloadCanvas(exportCanvas, `${selectedId}.png`);
-});
-
-// Show only the selected canvas to reduce clutter
-exportSelect.addEventListener('change', () => {
-  const canvasIds = ['grayscaleCanvas', 'matrixCanvas', 'asciiCanvas'];
-  canvasIds.forEach(id => {
-    const c = document.getElementById(id);
-    if (c) {
-      c.style.display = (id === exportSelect.value) ? 'block' : 'none';
-    }
-  });
-});
-// Initialize display state
-exportSelect.dispatchEvent(new Event('change'));
-
-const asciiCtx = asciiCanvas.getContext("2d");
-const matrixCtx = matrixCanvas.getContext("2d");
-const originalCtx = originalCanvas.getContext("2d");
-const grayscaleCtx = grayscaleCanvas.getContext("2d");
-
-const dotSizeSlider = document.getElementById("dotSize");
-const alphaSlider = document.getElementById("alphaThres");
-const ramp = " .,☆:~;*o✿O@@"
-let dotSize = parseInt(dotSizeSlider.value);
-let imgData; // store image data for halftone
-
-let halftoneMatrix = []; // will store matrix of dot values
-
-
-// Event Listeners
-dotSizeSlider.addEventListener("input", () => {
-    dotSize = parseInt(dotSizeSlider.value);
-    console.log("Dot size changed to:", dotSize);
-    drawHalftone();
-});
-
-alphaSlider.addEventListener("input", () => {
-    drawHalftone();
-});
-
-/**
- * Generates the halftone dot matrix from the current image data,
- * draws the matrix on the grayscale and matrix canvases,
- * and triggers ASCII rendering.
- *
- * @returns {void}
- */
-function drawHalftone() {
-  if (!imgData) return;
-  // Prepare full-resolution halftone on offscreen canvas
-  fullResCanvas.width = originalCanvas.width;
-  fullResCanvas.height = originalCanvas.height;
-  fullResCtx.clearRect(0, 0, fullResCanvas.width, fullResCanvas.height);
-  halftoneMatrix = [];
-  const { width, height, data: pixels } = imgData;
-  grayscaleCanvas.width = width;
-  grayscaleCanvas.height = height;
-  grayscaleCtx.clearRect(0, 0, width, height);
-
-  // Loop over pixels in strides of dotSize to adjust density
-  for (let y = 0; y < height; y += dotSize) {
-    const row = [];
-    for (let x = 0; x < width; x += dotSize) {
-      const index = (y * width + x) * 4;
-      const r = pixels[index], g = pixels[index + 1], b = pixels[index + 2], a = pixels[index + 3];
-      // brightness threshold from alpha slider
-      const brightThreshold = parseInt(alphaSlider.value);
-      // compute grayscale
-      const gray = 0.3 * r + 0.59 * g + 0.11 * b;
-      // skip too bright or transparent
-      if (a < brightThreshold || gray > brightThreshold) {
-        row.push(0);
-        continue;
+// Generates the halftone radius matrix
+class HalftoneGenerator {
+  /**
+   * @param {ImageData} imgData
+   * @param {number} dotSize
+   * @param {number} alphaThreshold
+   * @returns {number[][]}
+   */
+  static generate(imgData, dotSize, alphaThreshold) {
+    const { width, height, data } = imgData;
+    const matrix = [];
+    for (let y = 0; y < height; y += dotSize) {
+      const row = [];
+      for (let x = 0; x < width; x += dotSize) {
+        const idx = (y * width + x) * 4;
+        const r = data[idx], g = data[idx+1], b = data[idx+2], a = data[idx+3];
+        const gray = 0.3*r + 0.59*g + 0.11*b;
+        if (a < alphaThreshold || gray > alphaThreshold) {
+          row.push(0);
+        } else {
+          const radius = (1 - gray/255) * (dotSize/2);
+          row.push(radius);
+        }
       }
-      // radius scales with dotSize (halved)
-      const radius = (1 - gray / 255) * (dotSize / 2);
-      row.push(radius);
-      if (radius > 0) {
-        grayscaleCtx.beginPath();
-        grayscaleCtx.arc(x + dotSize / 2, y + dotSize / 2, radius, 0, Math.PI * 2);
-        grayscaleCtx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
-        grayscaleCtx.fill();
-        // Mirror drawing to full-resolution canvas
-        fullResCtx.beginPath();
-        fullResCtx.arc(x, y, radius, 0, Math.PI * 2);
-        fullResCtx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
-        fullResCtx.fill();
-      }
+      matrix.push(row);
     }
-    halftoneMatrix.push(row);
+    return matrix;
   }
-  drawMatrix();
-  drawASCII();
 }
 
-/**
- * Renders the halftoneMatrix as solid circles on matrixCanvas.
- *
- * @returns {void}
- */
-function drawMatrix() {
-  if (halftoneMatrix.length === 0) return;
-  const rows = halftoneMatrix.length;
-  const cols = halftoneMatrix[0].length;
-  // size matrixCanvas to match halftone grid
-  matrixCanvas.width = cols * dotSize;
-  matrixCanvas.height = rows * dotSize;
-  matrixCtx.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-
-  for (let ry = 0; ry < rows; ry++) {
-    for (let cx = 0; cx < cols; cx++) {
-      const radius = halftoneMatrix[ry][cx];
-      if (radius > 0) {
-        matrixCtx.beginPath();
-        matrixCtx.arc(
-          cx * dotSize + dotSize / 2,
-          ry * dotSize + dotSize / 2,
-          radius,
-          0,
-          Math.PI * 2
-        );
-        matrixCtx.fillStyle = "#000";
-        matrixCtx.fill();
+// Renders halftone as filled blocks
+class HalftoneRenderer {
+  /** @param {HTMLCanvasElement} canvas */
+  constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+  /** @param {number[][]} matrix @param {number} dotSize */
+  render(matrix, dotSize) {
+    const rows = matrix.length;
+    const cols = matrix[0]?.length || 0;
+    this.canvas.width = cols * dotSize;
+    this.canvas.height = rows * dotSize;
+    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    for (let y=0; y<rows; y++) {
+      for (let x=0; x<cols; x++) {
+        const rad = matrix[y][x];
+        if (rad>0) {
+          const gray = 255 - Math.round(rad/(dotSize/2)*255);
+          this.ctx.fillStyle = `rgb(${gray},${gray},${gray})`;
+          this.ctx.fillRect(x*dotSize, y*dotSize, dotSize, dotSize);
+        }
       }
     }
   }
 }
 
-/**
- * Converts halftoneMatrix values into characters using the ramp
- * and draws them on asciiCanvas.
- *
- * @returns {void}
- */
-function drawASCII() {
-  if (halftoneMatrix.length === 0) return;
-  const rows = halftoneMatrix.length;
-  const cols = halftoneMatrix[0].length;
-  // size asciiCanvas to match character grid
-  asciiCanvas.width  = cols * dotSize;
-  asciiCanvas.height = rows * dotSize;
-  asciiCtx.clearRect(0, 0, asciiCanvas.width, asciiCanvas.height);
-  // set monospace bold font sized to dotSize
-  asciiCtx.font = `bold ${dotSize}px monospace`;
-  asciiCtx.fillStyle = '#000';
-  asciiCtx.textBaseline = 'top';
-  for (let ry = 0; ry < rows; ry++) {
-    for (let cx = 0; cx < cols; cx++) {
-      const radius = halftoneMatrix[ry][cx];
-      // normalize radius to 0..1
-      const norm = radius / (dotSize / 2);
-      // Map normalized radius [0..1] to ramp index, clamped to [0, ramp.length-1]
-      const idx = Math.min(
-        ramp.length - 1,
-        Math.floor(norm * (ramp.length - 1))
-      );
-      const ch = ramp[idx] || ' ';
-      asciiCtx.fillText(ch, cx * dotSize, ry * dotSize);
+// Renders halftone as circles
+class MatrixRenderer {
+  constructor(canvas) { this.canvas=canvas; this.ctx=canvas.getContext('2d'); }
+  render(matrix, dotSize) {
+    const rows=matrix.length, cols=matrix[0]?.length||0;
+    this.canvas.width=cols*dotSize; this.canvas.height=rows*dotSize;
+    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    for(let ry=0; ry<rows; ry++){
+      for(let cx=0; cx<cols; cx++){
+        const radius=matrix[ry][cx];
+        if(radius>0){
+          const x=(cx+0.5)*dotSize;
+          const y=(ry+0.5)*dotSize;
+          this.ctx.beginPath();
+          this.ctx.arc(x,y,radius,0,Math.PI*2);
+          this.ctx.fillStyle='#000';
+          this.ctx.fill();
+        }
+      }
     }
   }
 }
 
-imageInput.addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  //display original image on canvas
-  const img = new Image();
-  img.onload = function () {
-    // Capture the full original image at its natural resolution
-    fullResCanvas.width = img.width;
-    fullResCanvas.height = img.height;
-    fullResCtx.clearRect(0, 0, img.width, img.height);
-    fullResCtx.drawImage(img, 0, 0);
-
-    originalCanvas.width = img.width;
-    originalCanvas.height = img.height;
-    originalCtx.drawImage(img, 0, 0);
-
-    imgData = originalCtx.getImageData(0, 0, img.width, img.height);
-    drawHalftone();
-    
+// Renders halftone as ASCII
+class ASCIIRenderer {
+  constructor(canvas) { this.canvas=canvas; this.ctx=canvas.getContext('2d'); }
+  /** @param {number[][]} matrix @param {number} dotSize @param {string} ramp */
+  render(matrix, dotSize, ramp){
+    const rows=matrix.length, cols=matrix[0]?.length||0;
+    this.canvas.width=cols*dotSize; this.canvas.height=rows*dotSize;
+    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    this.ctx.font=`bold ${dotSize}px monospace`;
+    this.ctx.fillStyle='#000'; this.ctx.textBaseline='top';
+    for(let ry=0; ry<rows; ry++){
+      for(let cx=0; cx<cols; cx++){
+        const norm=matrix[ry][cx]/(dotSize/2);
+        const idx=Math.min(ramp.length-1, Math.floor(norm*(ramp.length-1)));
+        const ch=ramp[idx]||' ';
+        this.ctx.fillText(ch, cx*dotSize, ry*dotSize);
+      }
+    }
   }
-  img.src = URL.createObjectURL(file);
+}
+
+// Main UI controller
+class UIController {
+  constructor(){
+    // DOM refs
+    this.imageInput=document.getElementById('imageInput');
+    this.originalCanvas=document.getElementById('originalCanvas');
+    this.grayscaleCanvas=document.getElementById('grayscaleCanvas');
+    this.matrixCanvas=document.getElementById('matrixCanvas');
+    this.asciiCanvas=document.getElementById('asciiCanvas');
+    this.downloadBtn=document.getElementById('downloadBtn');
+    this.exportButtons=document.querySelectorAll('#exportButtons .exportBtn');
+    this.dotSizeInput=document.getElementById('dotSize');
+    this.alphaSlider=document.getElementById('alphaThres');
+    this.contrastInput=document.getElementById('contrast'); 
+    this.ramp=" ･.,☆:^~;+*o✿$#O@";
+    this.selected='matrixCanvas';
+    this.imgData=null;
+
+    new ImageLoader(this.imageInput, this._onImageLoaded.bind(this));
+    this._setupUI();
+  }
+
+  /**
+   * Applies contrast to an ImageData object and returns a new ImageData.
+   * @param {ImageData} imgData
+   * @param {number} contrast - contrast multiplier (1 = no change)
+   */
+  _applyContrast(imgData, contrast) {
+    const { width, height, data } = imgData;
+    const newPixels = new Uint8ClampedArray(data.length);
+    for (let i = 0; i < data.length; i += 4) {
+      // adjust each channel
+      newPixels[i]     = Math.min(255, Math.max(0, (data[i]     - 128) * contrast + 128));
+      newPixels[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrast + 128));
+      newPixels[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrast + 128));
+      // preserve alpha
+      newPixels[i + 3] = data[i + 3];
+    }
+    return new ImageData(newPixels, width, height);
+  }
+
+  _setupUI(){
+    // export buttons
+    this.exportButtons.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        this._showCanvas(btn.dataset.canvas);
+      });
+    });
+    this._showCanvas(this.selected);
+    // download
+    this.downloadBtn.addEventListener('click',()=>{
+      const c=document.getElementById(this.selected);
+      if(c){const link=document.createElement('a');link.href=c.toDataURL();link.download=`${this.selected}.png`;link.click();}
+    });
+    // slider events
+    this.dotSizeInput.addEventListener('input',()=>this._redraw());
+    this.alphaSlider.addEventListener('input',()=>this._redraw());
+    if (this.contrastInput) {
+      this.contrastInput.addEventListener('input', () => this._redraw());
+    }
+
+    //dropZone and file upload
+    const dropZone = document.getElementById('dropZone');
+    // clicking the box opens file picker
+    dropZone.addEventListener('click', () => this.imageInput.click());
+
+    // highlight drop zone on dragover
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.style.border = '2px dashed #ccc';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.border = 'none';
+    });
+    // when a file is dropped, assign it and trigger `change`
+    dropZone.addEventListener('drop', e => {
+      dropZone.style.border = 'none';
+      e.preventDefault();
+      e.stopPropagation();
+      this.imageInput.files = e.dataTransfer.files;
+      this.imageInput.dispatchEvent(new Event('change'));
+    });
+  }
+
+
+  _showCanvas(id){
+    ['originalCanvas','grayscaleCanvas','matrixCanvas','asciiCanvas'].forEach(cid=>{
+      const c=document.getElementById(cid);
+      if(c)c.style.display=(cid===id?'block':'none');
+    });
+    this.selected=id;
+  }
+
+  _onImageLoaded(img){
+    // upscale once
+    const maxW = 2500;
+    const w = img.width < maxW ? maxW : img.width;
+    const h = img.height * (w / img.width);
+    console.log(`Loaded image: ${img.width}px → ${w}px × ${h}px`);
+    const ctx = this.originalCanvas.getContext('2d');
+    this.originalCanvas.width = w; this.originalCanvas.height = h;
+    ctx.clearRect(0,0,w,h);
+    ctx.drawImage(img,0,0,w,h);
+    this.imgData = ctx.getImageData(0,0,w,h);
+    this._redraw();
+
+    if (dropZone) {
+      dropZone.style.backgroundImage = `url(${img.src})`;
+      dropZone.style.backgroundSize = 'cover';
+      dropZone.style.backgroundPosition = 'center';
+    }
+  }
+
+  _redraw(){
+    if(!this.imgData) return;
+    const dot=+this.dotSizeInput.value;
+    const alpha=+this.alphaSlider.value;
+    const contrast = this.contrastInput ? +this.contrastInput.value : 1;
+
+    // create a contrast-adjusted copy of the image data if needed
+    let sourceData = this.imgData;
+    if (contrast !== 1) {
+      sourceData = this._applyContrast(this.imgData, contrast);
+    }
+
+    const mat=HalftoneGenerator.generate(sourceData,dot,alpha);
+    new HalftoneRenderer(this.grayscaleCanvas).render(mat,dot);
+    new MatrixRenderer(this.matrixCanvas).render(mat,dot);
+    new ASCIIRenderer(this.asciiCanvas).render(mat,dot,this.ramp);
+  }
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  new UIController();
 });

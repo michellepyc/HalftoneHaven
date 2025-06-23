@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Libre+Franklin:wght@400&display=swap');
+
+:root {
+  --color-background: #f4f4ed;
+  --color-surface: #dcdcdb;
+  --color-dark: #606162;
+  --color-accent: #a0a0f0;
+  --color-text: #434445; /* we can tweak later if you want a softer dark */
+  --font-heading: 'Libre Baskerville', serif;
+  --font-body: 'Libre Franklin', sans-serif;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  display: flex; /* makes children (sidebar and main) line up horizontally */
+  height: 100vh; /* full viewport height */
+  margin: 0px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Sidebar styling */
+#sidebar {
+  min-width: 220px; /* fixed width sidebar */
+  max-width: 300px;
+  height: auto;
+  background-color: var(--color-background);
+  padding: 2rem;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+#dropZone {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    justify-items: center;
+
+    padding: 2rem;
+    margin: 2rem;
+
+    aspect-ratio: 1 / 1;
+    background-color: var(--color-surface);
+    border-radius: 10px;
+}
+
+
+/* Main content area */
+#main {
+  flex: 1; /* take up all remaining space */
+  display: flex;
+  flex-direction: column;
+    margin: 2rem clamp(1rem, 4vw, 2rem);
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+#canvasContainer {
+    aspect-ratio: 1/1;
+    position: relative;
+    background-color:var(--color-surface);
+    border-radius: 24px;
+    min-height: 85vh;
+    min-width: 95vh;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    padding: 0rem 2rem;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+input[type="file"] {
+      margin-bottom: 1rem;
+    }
+
+/* Base button styling */
+button {
+  font-family: var(--font-body);
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+button:hover {
+  background-color: #8f8fdf; /* slightly darker accent */
+  transform: translateY(-2px);
+}
+button:active {
+  transform: translateY(0);
+}
+
+/* Export toggle buttons */
+.exportBtn {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-accent);
+  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+}
+.exportBtn:hover {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+/* Clear button (✕) */
+#clearBtn {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: var(--color-surface);
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+#clearBtn:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Download button override (if different look desired) */
+#downloadBtn {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+}
+#downloadBtn:hover {
+  background-color: #8f8fdf;
+}

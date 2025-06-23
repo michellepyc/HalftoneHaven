@@ -4,80 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Image Upload Preview</title>
-  <style>
-    body {
-      background: #f4f0ed;
-      color: #000000;
-      font-family: sans-serif;
-      padding: 2rem;
-    }
-
-    #header {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    #controls{
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-around;
-    }
-
-    input[type="file"] {
-      margin-bottom: 1rem;
-    }
-
-    #canvasContainer{
-        display: flex;
-        flex-wrap: wrap;
-        justify-content:space-evenly; 
-    }
-    
-    canvas {
-        max-width: 45vw;
-        max-height: 80vh;
-        /* border: 1px solid #444; */
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<div id="header"> 
-    <h1>📷 Upload an Image</h1>
+<div id="sidebar"> 
+  <!-- Header -->
+    <h1>HalftoneHaven</h1>
+  <!-- Import -->
+
+  <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
+  <div id="import">
+    <p>Upload an Image</p>
+    <div id="dropZone">
+      <!-- Import Icon -->
+      <p>Drag &amp; drop an image here or click to browse</p>
+      <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    </div>
+  </div>
+    
+  <!-- Controls -->
     <div id="controls">
-    <div>
-        <label for="dotSize">Dot Size:</label>
-        <input type="range" id="dotSize" min="5" max="100" value="12" />
+      <div>
+          <label for="dotSize">Dot Size:</label>
+          <input type="range" id="dotSize" min="5" max="120" value="12" />
+      </div>
+      <div>
+          <label for="alphaThres">Bias:</label>
+          <input type="range" id="alphaThres" min="0" max="255" step="1" value="188" />
+      </div>
+      <div>
+          <label for="contrast">Contrast:</label>
+          <input type="range" id="contrast" min="0.5" max="2" step="0.01" value="1" />
+      </div>
     </div>
-    <div>
-        <label for="alphaThres">Bias:</label>
-        <input 
-            type="range" 
-            id="alphaThres" 
-            min="0" 
-            max="255" 
-            step="1" 
-            value="188" 
-        />
+
+  <!-- Export -->
+  <button id="downloadBtn">Download PNG</button></div>
+  </div>
+</div>
+
+
+<div id="main">
+  <div>
+    <div id="exportButtons">
+      <button class="exportBtn" data-canvas="originalCanvas">Original</button>
+      <button class="exportBtn" data-canvas="matrixCanvas">Halftone</button>
+      <button class="exportBtn" data-canvas="asciiCanvas">ASCII</button>
+      <button class="exportBtn" data-canvas="grayscaleCanvas">Pixel</button>
     </div>
+  </div>
+  <div id="canvasContainer">
+      <canvas id="originalCanvas"></canvas>
+      <canvas id="matrixCanvas"></canvas>
+      <canvas id="asciiCanvas"></canvas>
+      <canvas id="grayscaleCanvas"></canvas>
     </div>
 </div>
-  <div> <input type="file" id="imageInput" accept="image/*" />
-  <label for="exportCanvasSelect">Export:</label>
-  <select id="exportCanvasSelect">
-    <option value="matrixCanvas">Halftone</option>
-    <option value="grayscaleCanvas">Grayscale</option>
-    <option value="asciiCanvas">ASCII</option>
-  </select>
-  <button id="downloadBtn">Download PNG</button></div>
-  <div id="canvasContainer"></div>
-
-
-  <script src="main.js"></script>
-
+  
+<script src="main.js"></script>
 </body>
 </html>
