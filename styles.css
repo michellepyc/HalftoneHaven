@@ -5,9 +5,12 @@
   --color-surface: #dcdcdb;
   --color-dark: #606162;
   --color-accent: #a0a0f0;
+  --color-accent-alt: #8a8ac8;
   --color-text: #434445; /* we can tweak later if you want a softer dark */
   --font-heading: 'Libre Baskerville', serif;
   --font-body: 'Libre Franklin', sans-serif;
+  --font-bttn: 'Libre Franklin Bold', sans-serif;
+
 }
 
 body {
@@ -26,7 +29,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Sidebar styling */
 #sidebar {
   min-width: 220px; /* fixed width sidebar */
-  max-width: 300px;
+  max-width: 270px;
   height: auto;
   background-color: var(--color-background);
   padding: 2rem;
@@ -35,20 +38,65 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
 }
 
+#sidebarContent{
+    margin: 2rem 1rem;
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between;
+}
+
+/* Drop zone container */
 #dropZone {
-    cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  aspect-ratio: 1 / 1;
+  margin: 2rem auto;
+  padding: 2rem;
+
+  background-color: var(--color-surface);
+  border: 2px dashed var(--color-accent);
+  border-radius: 12px;
+
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+#dropZone:hover,
+#dropZone:focus,
+#dropZone.dragover {
+  background-color: rgba(160, 160, 240, 0.15);
+  border-color: var(--color-dark);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+#dropZone:focus {
+  outline: none;
+}
+#dropZone p {
+  color: var(--color-dark);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+#dropZone svg {
+  width: 48px;
+  height: 48px;
+  fill: var(--color-accent);
+  transition: fill 0.3s ease;
+}
+#dropZone:hover svg,
+#dropZone.dragover svg {
+  fill: var(--color-dark);
+}
+
+#controls{
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    justify-items: center;
-
-    padding: 2rem;
-    margin: 2rem;
-
-    aspect-ratio: 1 / 1;
-    background-color: var(--color-surface);
-    border-radius: 10px;
+    justify-content: space-around;
+    gap: 2rem;
 }
 
 
@@ -68,8 +116,8 @@ h1, h2, h3, h4, h5, h6 {
     position: relative;
     background-color:var(--color-surface);
     border-radius: 24px;
-    min-height: 85vh;
-    min-width: 95vh;
+    min-width: 50vw;
+    max-width: 70vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     padding: 0rem 2rem;
@@ -92,9 +140,9 @@ input[type="file"] {
 
 /* Base button styling */
 button {
-  font-family: var(--font-body);
-  background-color: var(--color-accent);
-  color: var(--color-surface);
+  font-family: var(--font-bttn);
+  background-color: var(--color-background);
+  color: var(--color-dark);
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1rem;
@@ -109,47 +157,106 @@ button:active {
   transform: translateY(0);
 }
 
+#canvasButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
 /* Export toggle buttons */
-.exportBtn {
+.canvasBtn {
   background-color: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-accent);
   border-radius: 6px;
-  padding: 0.25rem 0.75rem;
+  padding: 0.5rem 1rem;
 }
-.exportBtn:hover {
+.canvasBtn:hover {
   background-color: var(--color-accent);
   color: var(--color-surface);
 }
 
-/* Clear button (✕) */
-#clearBtn {
-  background-color: rgba(0, 0, 0, 0.2);
-  color: var(--color-surface);
-  border: none;
+#downloadBtn {
+    font-weight: bold;
+  background-color: var(--color-accent);
+  color: var(--color-background);
+  border-radius: 8px;
+  padding: 1rem 1rem;
+}
+#downloadBtn:hover {
+  background-color: var(--color-accent-alt);
+}
+
+/* Slider base styling */
+input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  margin: 0.5rem 0;
+  background: transparent;
+}
+
+/* WebKit track */
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+/* WebKit thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--color-accent-alt);
+  border: 2px solid var(--color-surface);
   border-radius: 50%;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  margin-top: -4px; /* centers thumb on track */
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-#clearBtn:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+input[type="range"]:hover::-webkit-slider-thumb {
+  background-color: var(--color-accent);
 }
 
-/* Download button override (if different look desired) */
-#downloadBtn {
-  background-color: var(--color-accent);
-  color: var(--color-surface);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
+/* Mozilla track */
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: var(--color-accent);
+  border-radius: 4px;
 }
-#downloadBtn:hover {
-  background-color: #8f8fdf;
+/* Mozilla thumb */
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--color-accent-alt);
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+input[type="range"]:hover::-moz-range-thumb {
+  background-color: var(--color-accent);
+}
+
+/* Remove focus outline and add custom focus ring */
+input[type="range"]:focus {
+  outline: none;
+}
+input[type="range"]:focus::-webkit-slider-thumb,
+input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(160, 160, 240, 0.5);
+}
+
+.file-info {
+  position: absolute;
+  bottom: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
 }

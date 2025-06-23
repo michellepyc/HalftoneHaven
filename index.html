@@ -13,7 +13,7 @@
     <h1>HalftoneHaven</h1>
   <!-- Import -->
 
-  <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
+  <div id="sidebarContent">
   <div id="import">
     <p>Upload an Image</p>
     <div id="dropZone">
@@ -27,16 +27,17 @@
     <div id="controls">
       <div>
           <label for="dotSize">Dot Size:</label>
-          <input type="range" id="dotSize" min="5" max="120" value="12" />
-      </div>
-      <div>
-          <label for="alphaThres">Bias:</label>
-          <input type="range" id="alphaThres" min="0" max="255" step="1" value="188" />
+          <input type="range" id="dotSize" min="5" max="120" value="35" />
       </div>
       <div>
           <label for="contrast">Contrast:</label>
           <input type="range" id="contrast" min="0.5" max="2" step="0.01" value="1" />
       </div>
+      <div>
+          <label for="alphaThres">Dither:</label>
+          <input type="range" id="alphaThres" min="0" max="255" step="1" value="228" />
+      </div>
+
     </div>
 
   <!-- Export -->
@@ -46,20 +47,19 @@
 
 
 <div id="main">
-  <div>
-    <div id="exportButtons">
-      <button class="exportBtn" data-canvas="originalCanvas">Original</button>
-      <button class="exportBtn" data-canvas="matrixCanvas">Halftone</button>
-      <button class="exportBtn" data-canvas="asciiCanvas">ASCII</button>
-      <button class="exportBtn" data-canvas="grayscaleCanvas">Pixel</button>
+    <div id="canvasButtons">
+      <button class="canvasBtn" data-canvas="originalCanvas">Original</button>
+      <button class="canvasBtn" data-canvas="halftoneCanvas">Halftone</button>
+      <button class="canvasBtn" data-canvas="asciiCanvas">ASCII</button>
+      <button class="canvasBtn" data-canvas="pixelCanvas">Pixel</button>
     </div>
-  </div>
   <div id="canvasContainer">
       <canvas id="originalCanvas"></canvas>
-      <canvas id="matrixCanvas"></canvas>
+      <canvas id="halftoneCanvas"></canvas>
       <canvas id="asciiCanvas"></canvas>
-      <canvas id="grayscaleCanvas"></canvas>
+      <canvas id="pixelCanvas"></canvas>
     </div>
+    <p style="font-size: 0.8em; color: var(--color-dark); margin: 0;">michellepyc</p>
 </div>
   
 <script src="main.js"></script>

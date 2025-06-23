@@ -125,20 +125,29 @@ class UIController {
     // DOM refs
     this.imageInput=document.getElementById('imageInput');
     this.originalCanvas=document.getElementById('originalCanvas');
-    this.grayscaleCanvas=document.getElementById('grayscaleCanvas');
-    this.matrixCanvas=document.getElementById('matrixCanvas');
+    this.pixelCanvas=document.getElementById('pixelCanvas');
+    this.halftoneCanvas=document.getElementById('halftoneCanvas');
     this.asciiCanvas=document.getElementById('asciiCanvas');
     this.downloadBtn=document.getElementById('downloadBtn');
-    this.exportButtons=document.querySelectorAll('#exportButtons .exportBtn');
+    this.canvasButtons=document.querySelectorAll('#canvasButtons .canvasBtn');
     this.dotSizeInput=document.getElementById('dotSize');
     this.alphaSlider=document.getElementById('alphaThres');
     this.contrastInput=document.getElementById('contrast'); 
-    this.ramp=" ･.,☆:^~;+*o✿$#O@";
-    this.selected='matrixCanvas';
+    this.ramp=" .･｡✧:☆;~^+*o#O@";
+    this.selected='asciiCanvas';
     this.imgData=null;
 
     new ImageLoader(this.imageInput, this._onImageLoaded.bind(this));
     this._setupUI();
+
+    // Load default image on first load
+    const defaultSrc = 'Test.png'; // replace with your default image path
+    const defaultImg = new Image();
+    defaultImg.crossOrigin = 'anonymous';
+    defaultImg.onload = () => {
+      this._onImageLoaded(defaultImg);
+    };
+    defaultImg.src = defaultSrc;
   }
 
   /**
@@ -161,13 +170,15 @@ class UIController {
   }
 
   _setupUI(){
-    // export buttons
-    this.exportButtons.forEach(btn=>{
+    // canvas buttons
+    this.canvasButtons.forEach(btn=>{
       btn.addEventListener('click',()=>{
         this._showCanvas(btn.dataset.canvas);
       });
     });
     this._showCanvas(this.selected);
+
+
     // download
     this.downloadBtn.addEventListener('click',()=>{
       const c=document.getElementById(this.selected);
@@ -188,14 +199,15 @@ class UIController {
     // highlight drop zone on dragover
     dropZone.addEventListener('dragover', e => {
       e.preventDefault();
-      dropZone.style.border = '2px dashed #ccc';
+      dropZone.style.border = '2px dashed #606162'
+      dropZone.style.backgroundColor =  'rgba(160, 160, 240, 0.15)';
     });
     dropZone.addEventListener('dragleave', () => {
-      dropZone.style.border = 'none';
+      dropZone.style.border = '2px dashed #a0a0f0'
     });
     // when a file is dropped, assign it and trigger `change`
     dropZone.addEventListener('drop', e => {
-      dropZone.style.border = 'none';
+      dropZone.style.border = '2px dashed #a0a0f0'
       e.preventDefault();
       e.stopPropagation();
       this.imageInput.files = e.dataTransfer.files;
@@ -205,7 +217,7 @@ class UIController {
 
 
   _showCanvas(id){
-    ['originalCanvas','grayscaleCanvas','matrixCanvas','asciiCanvas'].forEach(cid=>{
+    ['originalCanvas','pixelCanvas','halftoneCanvas','asciiCanvas'].forEach(cid=>{
       const c=document.getElementById(cid);
       if(c)c.style.display=(cid===id?'block':'none');
     });
@@ -245,8 +257,8 @@ class UIController {
     }
 
     const mat=HalftoneGenerator.generate(sourceData,dot,alpha);
-    new HalftoneRenderer(this.grayscaleCanvas).render(mat,dot);
-    new MatrixRenderer(this.matrixCanvas).render(mat,dot);
+    new HalftoneRenderer(this.pixelCanvas).render(mat,dot);
+    new MatrixRenderer(this.halftoneCanvas).render(mat,dot);
     new ASCIIRenderer(this.asciiCanvas).render(mat,dot,this.ramp);
   }
 }
